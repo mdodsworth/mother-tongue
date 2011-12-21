@@ -1,3 +1,5 @@
+.DS_Store
 .*.un~
 build/
 .gradle/
+*.swp

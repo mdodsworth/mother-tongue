@@ -1,0 +1,31 @@
+/*
+ * Configure the eclipse compiler for all 'Compile' tasks
+ */
+configurations {
+    jdt
+}
+
+dependencies {
+    jdt "org.eclipse.jdt.core.compiler:ecj:3.7.1"
+}
+
+warnings = [
+    'allDeprecation',
+    'assertIdentifier',
+    'charConcat',
+    'compareIdentical',
+    'conditionAssign',
+    'constructorName',
+    'hashCode',
+    ]
+
+tasks.withType(Compile) {
+    options.compiler = "org.eclipse.jdt.core.JDTCompilerAdapter"
+    options.define(compilerArgs: ['-enableJavadoc', "-warn:${warnings.join(',')}"])
+    doFirst {
+        ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
+        configurations.jdt.each { File file ->
+            antClassLoader.addURL(file.toURI().toURL())
+        }
+    }
+}

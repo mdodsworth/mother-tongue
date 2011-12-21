@@ -1,7 +1,27 @@
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.CombinedConfiguration;
+import org.apache.commons.configuration.tree.OverrideCombiner;
+
 apply plugin: 'java'
 apply plugin: 'idea'
 
+if (useEclipseCompiler.toBoolean()) {
+    apply from: 'build-compile.gradle'
+}
+
 sourceCompatibility = 1.7
+
+apply plugin: 'application'
+mainClassName = 'com.mothertongue.Main'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'commons-configuration', name: 'commons-configuration', version: '1.7'
+    }
+}
 
 repositories {
     mavenCentral()
@@ -10,4 +30,29 @@ repositories {
 dependencies {
      compile group: 'com.google.guava', name: 'guava', version: '10.+'
      testCompile group: 'junit', name: 'junit', version: '4.+'
+     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.+'
+}
+
+task show << {
+    println cc.getKeys().each { println it + " : " + cc.getString(it) }
+    println "this is a test ${getProperty('solr.home')} and ${getProperty('config.dir')}"
+}
+
+readProperties()
+
+def readProperties() {
+
+    defaultProperties = new PropertiesConfiguration("default.properties");
+    userProperties = new PropertiesConfiguration("user.properties");
+
+    // Create and initialize the node combiner
+    combiner = new OverrideCombiner();
+
+    // Construct the combined configuration
+    cc = new CombinedConfiguration(combiner);
+    cc.addConfiguration(userProperties, "user");
+    cc.addConfiguration(defaultProperties, "default");
+
+    // Attach the combined configuration to the Project
+    cc.getKeys().each { project.setProperty(it, cc.getString(it)) }
 }
